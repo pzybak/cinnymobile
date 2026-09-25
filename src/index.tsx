@@ -17,8 +17,11 @@ import App from './app/pages/App';
 import './app/i18n';
 import { pushSessionToSW } from './sw-session';
 import { getFallbackSession } from './app/state/sessions';
+import { initNative } from './native';
 
 document.body.classList.add(configClass, varsClass);
+
+initNative();
 
 // Register Service Worker
 if ('serviceWorker' in navigator) {

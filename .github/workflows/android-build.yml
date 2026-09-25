@@ -1,0 +1,41 @@
+name: Android build
+
+on:
+  push:
+    branches: ['mobile']
+  pull_request:
+    branches: ['mobile']
+  workflow_dispatch:
+
+jobs:
+  android-debug:
+    name: Debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: '.node-version'
+          package-manager-cache: false
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build web bundle and sync native projects
+        env:
+          NODE_OPTIONS: '--max_old_space_size=4096'
+        run: npm run build:mobile
+      - name: Assemble debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+      - name: Upload APK
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cinny-mobile-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          retention-days: 14
