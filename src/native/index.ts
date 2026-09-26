@@ -1,5 +1,6 @@
 import { SystemBars, SystemBarsStyle } from '@capacitor/core';
 import { isNative } from './platform';
+import { receiveLink } from './deepLinks';
 import './native.css';
 
 /**
@@ -16,6 +17,17 @@ const setupBackButton = async () => {
       App.exitApp();
     }
   });
+};
+
+/**
+ * matrix.to and matrix: links opened from other apps. A cold start from a
+ * link reports it through getLaunchUrl, a running app through appUrlOpen.
+ */
+const setupDeepLinks = async () => {
+  const { App } = await import('@capacitor/app');
+  App.addListener('appUrlOpen', ({ url }) => receiveLink(url));
+  const launch = await App.getLaunchUrl();
+  if (launch?.url) receiveLink(launch.url);
 };
 
 /**
@@ -48,5 +60,5 @@ export const initNative = async (): Promise<void> => {
   if (!isNative()) return;
   document.documentElement.classList.add('native');
   syncSystemBarsStyle();
-  await setupBackButton();
+  await Promise.all([setupBackButton(), setupDeepLinks()]);
 };
