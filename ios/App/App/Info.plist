@@ -12,6 +12,14 @@
 				<string>matrix</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>sso</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>io.github.pzybak.cinnymobile</string>
+			</array>
+		</dict>
 	</array>
   <key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>

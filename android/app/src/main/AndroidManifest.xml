@@ -31,6 +31,14 @@
                 <data android:scheme="https" android:host="matrix.to" />
             </intent-filter>
 
+            <!-- SSO callback from the in-app browser (src/native/sso.ts) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="io.github.pzybak.cinnymobile" android:host="sso" />
+            </intent-filter>
+
             <!-- matrix: URIs (MSC2312) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

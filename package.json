@@ -45,6 +45,7 @@
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "1.0.3",
     "@capacitor/android": "8.5.2",
     "@capacitor/app": "8.1.1",
+    "@capacitor/browser": "8.0.4",
     "@capacitor/core": "8.5.2",
     "@capacitor/ios": "8.5.2",
     "@fontsource/inter": "4.5.14",

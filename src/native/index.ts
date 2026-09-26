@@ -1,6 +1,7 @@
 import { SystemBars, SystemBarsStyle } from '@capacitor/core';
 import { isNative } from './platform';
 import { receiveLink } from './deepLinks';
+import { receiveSsoCallback, setupSsoLinks } from './sso';
 import './native.css';
 
 /**
@@ -20,14 +21,17 @@ const setupBackButton = async () => {
 };
 
 /**
- * matrix.to and matrix: links opened from other apps. A cold start from a
+ * matrix.to and matrix: links opened from other apps, and SSO callbacks. A cold start from a
  * link reports it through getLaunchUrl, a running app through appUrlOpen.
  */
 const setupDeepLinks = async () => {
   const { App } = await import('@capacitor/app');
-  App.addListener('appUrlOpen', ({ url }) => receiveLink(url));
+  const handleUrl = (url: string) => {
+    if (!receiveSsoCallback(url)) receiveLink(url);
+  };
+  App.addListener('appUrlOpen', ({ url }) => handleUrl(url));
   const launch = await App.getLaunchUrl();
-  if (launch?.url) receiveLink(launch.url);
+  if (launch?.url) handleUrl(launch.url);
 };
 
 /**
@@ -60,5 +64,6 @@ export const initNative = async (): Promise<void> => {
   if (!isNative()) return;
   document.documentElement.classList.add('native');
   syncSystemBarsStyle();
+  setupSsoLinks();
   await Promise.all([setupBackButton(), setupDeepLinks()]);
 };
