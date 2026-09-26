@@ -251,6 +251,10 @@ const useDraggableItem = (
     const target = targetRef.current;
     const dragHandle = dragHandleRef?.current ?? undefined;
 
+    // Android reports (0, 0) for the position when a drag ends, so track
+    // whether the drag ever moved from the positions seen along the way.
+    let moved = false;
+
     return !target
       ? undefined
       : draggable({
@@ -258,20 +262,24 @@ const useDraggableItem = (
           dragHandle,
           getInitialData: () => ({ item }),
           onDragStart: () => {
+            moved = false;
             setDragging(true);
             onDragging?.(item);
           },
-          onDrop: ({ location }) => {
+          onDrag: ({ location }) => {
+            const { initial, current } = location;
+            if (current.input.clientX === 0 && current.input.clientY === 0) return;
+            if (
+              Math.abs(current.input.clientX - initial.input.clientX) > DROP_IN_PLACE_DISTANCE ||
+              Math.abs(current.input.clientY - initial.input.clientY) > DROP_IN_PLACE_DISTANCE
+            ) {
+              moved = true;
+            }
+          },
+          onDrop: () => {
             setDragging(false);
             onDragging?.(undefined);
-            const { initial, current } = location;
-            if (
-              onDropInPlace &&
-              Math.abs(current.input.clientX - initial.input.clientX) <= DROP_IN_PLACE_DISTANCE &&
-              Math.abs(current.input.clientY - initial.input.clientY) <= DROP_IN_PLACE_DISTANCE
-            ) {
-              onDropInPlace();
-            }
+            if (onDropInPlace && !moved) onDropInPlace();
           },
         });
   }, [targetRef, dragHandleRef, item, onDragging, onDropInPlace]);
