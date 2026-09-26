@@ -19,7 +19,6 @@ type BottomSheetProps = {
  * down while its content is scrolled to the top.
  */
 export function BottomSheet({ onClose, children }: BottomSheetProps) {
-  const contentRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<number>();
   const [dragY, setDragY] = useState(0);
 
@@ -27,12 +26,21 @@ export function BottomSheet({ onClose, children }: BottomSheetProps) {
   onCloseRef.current = onClose;
   useEffect(() => pushBackHandler(() => onCloseRef.current()), []);
 
-  const handleTouchStart = (evt: TouchEvent) => {
-    const scrolled = (contentRef.current?.scrollTop ?? 0) > 0;
-    dragStartRef.current = scrolled ? undefined : evt.touches[0].clientY;
+  const handleTouchStart = (evt: TouchEvent<HTMLDivElement>) => {
+    // Pulling down in a scrolled list (the sheet or a list inside it, such as
+    // the emoji grid) scrolls it back up instead of dragging the sheet.
+    let el = evt.target instanceof Element ? evt.target : null;
+    while (el && el !== evt.currentTarget) {
+      if (el.scrollTop > 0) {
+        dragStartRef.current = undefined;
+        return;
+      }
+      el = el.parentElement;
+    }
+    dragStartRef.current = evt.touches[0].clientY;
   };
 
-  const handleTouchMove = (evt: TouchEvent) => {
+  const handleTouchMove = (evt: TouchEvent<HTMLDivElement>) => {
     if (dragStartRef.current === undefined) return;
     setDragY(Math.max(0, evt.touches[0].clientY - dragStartRef.current));
   };
@@ -66,9 +74,7 @@ export function BottomSheet({ onClose, children }: BottomSheetProps) {
           onTouchCancel={handleTouchEnd}
         >
           <div className={css.Handle} />
-          <div className={css.Content} ref={contentRef}>
-            {children}
-          </div>
+          <div className={css.Content}>{children}</div>
         </div>
       </FocusTrap>
     </Overlay>

@@ -64,6 +64,7 @@ import { MessageLayout, MessageSpacing } from '../../../state/settings';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { isTouchContextMenu, useLongPress } from '../../../hooks/useLongPress';
 import { useRecentEmoji } from '../../../hooks/useRecentEmoji';
+import { emojis } from '../../../plugins/emoji';
 import { useTouchInput } from '../../../hooks/useTouchInput';
 import { BottomSheet } from '../../../components/bottom-sheet';
 import * as css from './styles.css';
@@ -90,10 +91,23 @@ export type ReactionHandler = (keyOrMxc: string, shortcode: string) => void;
 type MessageQuickReactionsProps = {
   onReaction: ReactionHandler;
 };
+// Fills the touch menu's reaction row when there are few recent emojis.
+const DEFAULT_QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+
 export const MessageQuickReactions = as<'div', MessageQuickReactionsProps>(
   ({ onReaction, ...props }, ref) => {
     const mx = useMatrixClient();
-    const recentEmojis = useRecentEmoji(mx, 4);
+    const touchInput = useTouchInput();
+    const recent = useRecentEmoji(mx, touchInput ? 6 : 4);
+    const recentEmojis = touchInput
+      ? [
+          ...recent,
+          ...DEFAULT_QUICK_REACTIONS.flatMap((unicode) => {
+            const emoji = emojis.find((e) => e.unicode === unicode);
+            return emoji && !recent.some((r) => r.unicode === unicode) ? [emoji] : [];
+          }),
+        ].slice(0, 6)
+      : recent;
 
     if (recentEmojis.length === 0) return <span />;
     return (
@@ -101,7 +115,7 @@ export const MessageQuickReactions = as<'div', MessageQuickReactionsProps>(
         <Box
           style={{ padding: config.space.S200 }}
           alignItems="Center"
-          justifyContent="Center"
+          justifyContent={touchInput ? 'SpaceBetween' : 'Center'}
           gap="200"
           {...props}
           ref={ref}
@@ -121,7 +135,7 @@ export const MessageQuickReactions = as<'div', MessageQuickReactionsProps>(
             </IconButton>
           ))}
         </Box>
-        <Line size="300" />
+        {!touchInput && <Line size="300" />}
       </>
     );
   }

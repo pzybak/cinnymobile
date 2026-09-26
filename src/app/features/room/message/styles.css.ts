@@ -52,12 +52,19 @@ export const MessageMenuSheet = style({
   gap: config.space.S300,
 });
 globalStyle(`${MessageMenuSheet} ${MessageMenuGroup}`, {
+  gap: 0,
   borderRadius: config.radii.R400,
   backgroundColor: color.SurfaceVariant.Container,
 });
+// Rows share their group's card. Plain backgrounds also keep a row from
+// staying highlighted after a tap (touch leaves :hover set).
 globalStyle(`${MessageMenuSheet} ${MessageMenuGroup} > button`, {
   height: 'auto',
-  minHeight: toRem(48),
+  minHeight: toRem(52),
+  backgroundColor: 'transparent',
+});
+globalStyle(`${MessageMenuSheet} ${MessageMenuGroup} > button:active`, {
+  backgroundColor: color.SurfaceVariant.ContainerActive,
 });
 globalStyle(`${MessageMenuSheet} ${MessageMenuItemText}`, {
   fontSize: toRem(16),
