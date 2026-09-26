@@ -74,8 +74,8 @@ Other mobile gaps:
   Keychain.
 - **IndexedDB can be evicted**, and the client stops syncing while the app is
   in the background.
-- **Downloads use file-saver**, which does nothing useful in the WebView;
-  they need native save and share.
+- **Downloads use file-saver**, which likely doesn't save anything from the
+  WebView (not tested yet); they probably need native save and share.
 - **Element Call** needs camera and microphone permissions wired up.
 - **Authenticated media** relies on the service worker, which WKWebView
   doesn't run under `capacitor://`, so images won't load on iOS as is.
