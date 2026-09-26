@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import { ContainerColor } from '../../styles/ContainerColor.css';
 import * as css from './style.css';
 import { ScreenSize, useScreenSizeContext } from '../../hooks/useScreenSize';
+import { MobileDrawerPanel } from '../mobile-drawer';
 
 type PageRootProps = {
   nav: ReactNode;
@@ -19,7 +20,7 @@ export function PageRoot({ nav, children }: PageRootProps) {
       {screenSize !== ScreenSize.Mobile && (
         <Line variant="Background" size="300" direction="Vertical" />
       )}
-      {children}
+      <MobileDrawerPanel>{children}</MobileDrawerPanel>
     </Box>
   );
 }

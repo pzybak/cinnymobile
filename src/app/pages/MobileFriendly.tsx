@@ -1,7 +1,8 @@
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { useMatch } from 'react-router-dom';
 import { ScreenSize, useScreenSizeContext } from '../hooks/useScreenSize';
 import { DIRECT_PATH, EXPLORE_PATH, HOME_PATH, INBOX_PATH, SPACE_PATH } from './paths';
+import { MobileDrawerNav } from '../components/mobile-drawer';
 
 type MobileFriendlyClientNavProps = {
   children: ReactNode;
@@ -14,11 +15,16 @@ export function MobileFriendlyClientNav({ children }: MobileFriendlyClientNavPro
   const exploreMatch = useMatch({ path: EXPLORE_PATH, caseSensitive: true, end: true });
   const inboxMatch = useMatch({ path: INBOX_PATH, caseSensitive: true, end: true });
 
-  if (
-    screenSize === ScreenSize.Mobile &&
-    !(homeMatch || directMatch || spaceMatch || exploreMatch || inboxMatch)
-  ) {
-    return null;
+  if (screenSize === ScreenSize.Mobile) {
+    // Kept mounted under the open page for the swipe drawer.
+    return (
+      <MobileDrawerNav
+        slot="sidebar"
+        inPlace={!!(homeMatch || directMatch || spaceMatch || exploreMatch || inboxMatch)}
+      >
+        {children}
+      </MobileDrawerNav>
+    );
   }
 
   return children;
@@ -36,8 +42,13 @@ export function MobileFriendlyPageNav({ path, children }: MobileFriendlyPageNavP
     end: true,
   });
 
-  if (screenSize === ScreenSize.Mobile && !exactPath) {
-    return null;
+  if (screenSize === ScreenSize.Mobile) {
+    // Kept mounted under the open page for the swipe drawer.
+    return (
+      <MobileDrawerNav slot="page" inPlace={!!exactPath}>
+        {children}
+      </MobileDrawerNav>
+    );
   }
 
   return children;

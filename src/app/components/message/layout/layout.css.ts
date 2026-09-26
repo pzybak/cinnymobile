@@ -123,14 +123,9 @@ export const AvatarBase = style({
   display: 'flex',
   alignSelf: 'start',
 
-  '@media': {
-    // Touch leaves :hover set after a tap; see Sidebar.css.ts.
-    '(hover: hover)': {
-      selectors: {
-        '&:hover': {
-          transform: `translateY(${toRem(-2)})`,
-        },
-      },
+  selectors: {
+    '&:hover': {
+      transform: `translateY(${toRem(-2)})`,
     },
   },
 });

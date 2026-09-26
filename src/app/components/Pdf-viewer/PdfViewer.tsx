@@ -25,6 +25,7 @@ import FileSaver from 'file-saver';
 import * as css from './PdfViewer.css';
 import { AsyncStatus } from '../../hooks/useAsyncCallback';
 import { useZoom } from '../../hooks/useZoom';
+import { usePinchZoom } from '../../hooks/usePinchZoom';
 import { createPage, usePdfDocumentLoader, usePdfJSLoader } from '../../plugins/pdfjs-dist';
 import { stopPropagation } from '../../utils/keyboard';
 
@@ -51,6 +52,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
       pdfJSState.status === AsyncStatus.Error || docState.status === AsyncStatus.Error;
     const [pageNo, setPageNo] = useState(1);
     const [jumpAnchor, setJumpAnchor] = useState<RectCords>();
+    usePinchZoom(scrollRef, containerRef, zoom, setZoom, docState.status === AsyncStatus.Success);
 
     useEffect(() => {
       loadPdfJS();

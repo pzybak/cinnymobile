@@ -8,6 +8,8 @@ import {
   useSetRoomNotificationPreference,
 } from '../hooks/useRoomsNotificationPreferences';
 import { AsyncStatus } from '../hooks/useAsyncCallback';
+import { useTouchInput } from '../hooks/useTouchInput';
+import { BottomSheet } from './bottom-sheet';
 
 const useRoomNotificationModes = (): RoomNotificationMode[] =>
   useMemo(
@@ -45,6 +47,7 @@ export function RoomNotificationModeSwitcher({
   value = RoomNotificationMode.Unset,
   children,
 }: NotificationModeSwitcherProps) {
+  const touchInput = useTouchInput();
   const modes = useRoomNotificationModes();
   const modeToStr = useRoomNotificationModeStr();
 
@@ -67,6 +70,43 @@ export function RoomNotificationModeSwitcher({
     handleClose();
   };
 
+  const menuJSX = (
+    <Menu>
+      <Box direction="Column" gap="100" style={{ padding: config.space.S100 }}>
+        {modes.map((mode) => (
+          <MenuItem
+            key={mode}
+            size="300"
+            variant="Surface"
+            aria-pressed={mode === value}
+            radii="300"
+            disabled={changing}
+            onClick={() => handleSelect(mode)}
+            before={
+              <Icon size="100" src={getRoomNotificationModeIcon(mode)} filled={mode === value} />
+            }
+          >
+            <Text size="T300">{mode === value ? <b>{modeToStr[mode]}</b> : modeToStr[mode]}</Text>
+          </MenuItem>
+        ))}
+      </Box>
+    </Menu>
+  );
+
+  if (touchInput) {
+    // Stacked over the room's own menu sheet on touch screens.
+    return (
+      <>
+        {children(handleOpenMenu, !!menuCords, changing)}
+        {menuCords && (
+          <BottomSheet menu title="Notifications" onClose={handleClose}>
+            {menuJSX}
+          </BottomSheet>
+        )}
+      </>
+    );
+  }
+
   return (
     <PopOut
       anchor={menuCords}
@@ -85,32 +125,7 @@ export function RoomNotificationModeSwitcher({
             escapeDeactivates: stopPropagation,
           }}
         >
-          <Menu>
-            <Box direction="Column" gap="100" style={{ padding: config.space.S100 }}>
-              {modes.map((mode) => (
-                <MenuItem
-                  key={mode}
-                  size="300"
-                  variant="Surface"
-                  aria-pressed={mode === value}
-                  radii="300"
-                  disabled={changing}
-                  onClick={() => handleSelect(mode)}
-                  before={
-                    <Icon
-                      size="100"
-                      src={getRoomNotificationModeIcon(mode)}
-                      filled={mode === value}
-                    />
-                  }
-                >
-                  <Text size="T300">
-                    {mode === value ? <b>{modeToStr[mode]}</b> : modeToStr[mode]}
-                  </Text>
-                </MenuItem>
-              ))}
-            </Box>
-          </Menu>
+          {menuJSX}
         </FocusTrap>
       }
     >
