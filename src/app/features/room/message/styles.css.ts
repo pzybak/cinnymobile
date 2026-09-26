@@ -1,5 +1,5 @@
-import { style } from '@vanilla-extract/css';
-import { DefaultReset, config, toRem } from 'folds';
+import { globalStyle, style } from '@vanilla-extract/css';
+import { DefaultReset, color, config, toRem } from 'folds';
 
 export const MessageBase = style({
   position: 'relative',
@@ -42,6 +42,29 @@ export const MessageMenuGroup = style({
 
 export const MessageMenuItemText = style({
   flexGrow: 1,
+});
+
+// The message menu inside a touch bottom sheet: grouped cards with
+// full-width, finger-sized rows, reusing the desktop menu's items.
+export const MessageMenuSheet = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: config.space.S300,
+});
+globalStyle(`${MessageMenuSheet} ${MessageMenuGroup}`, {
+  borderRadius: config.radii.R400,
+  backgroundColor: color.SurfaceVariant.Container,
+});
+globalStyle(`${MessageMenuSheet} ${MessageMenuGroup} > button`, {
+  height: 'auto',
+  minHeight: toRem(48),
+});
+globalStyle(`${MessageMenuSheet} ${MessageMenuItemText}`, {
+  fontSize: toRem(16),
+});
+globalStyle(`${MessageMenuSheet} ${MessageQuickReaction}`, {
+  minWidth: toRem(48),
+  height: toRem(48),
 });
 
 export const ReactionsContainer = style({
