@@ -251,37 +251,52 @@ const useDraggableItem = (
     const target = targetRef.current;
     const dragHandle = dragHandleRef?.current ?? undefined;
 
-    // Android reports (0, 0) for the position when a drag ends, so track
-    // whether the drag ever moved from the positions seen along the way.
+    // Whether the drag moved, from the drag events seen along the way: on
+    // Android the library's own position updates rarely fire, and some
+    // events report (0, 0).
+    let start = { x: 0, y: 0 };
     let moved = false;
+    const trackMove = (evt: DragEvent) => {
+      if (evt.clientX === 0 && evt.clientY === 0) return;
+      if (
+        Math.abs(evt.clientX - start.x) > DROP_IN_PLACE_DISTANCE ||
+        Math.abs(evt.clientY - start.y) > DROP_IN_PLACE_DISTANCE
+      ) {
+        moved = true;
+      }
+    };
+    const stopTracking = () => {
+      document.removeEventListener('drag', trackMove, true);
+      document.removeEventListener('dragenter', trackMove, true);
+    };
 
-    return !target
+    const cleanup = !target
       ? undefined
       : draggable({
           element: target,
           dragHandle,
           getInitialData: () => ({ item }),
-          onDragStart: () => {
-            moved = false;
+          onDragStart: ({ location }) => {
             setDragging(true);
             onDragging?.(item);
-          },
-          onDrag: ({ location }) => {
-            const { initial, current } = location;
-            if (current.input.clientX === 0 && current.input.clientY === 0) return;
-            if (
-              Math.abs(current.input.clientX - initial.input.clientX) > DROP_IN_PLACE_DISTANCE ||
-              Math.abs(current.input.clientY - initial.input.clientY) > DROP_IN_PLACE_DISTANCE
-            ) {
-              moved = true;
-            }
+            if (!onDropInPlace) return;
+            start = { x: location.initial.input.clientX, y: location.initial.input.clientY };
+            moved = false;
+            document.addEventListener('drag', trackMove, true);
+            document.addEventListener('dragenter', trackMove, true);
           },
           onDrop: () => {
             setDragging(false);
             onDragging?.(undefined);
-            if (onDropInPlace && !moved) onDropInPlace();
+            if (!onDropInPlace) return;
+            stopTracking();
+            if (!moved) onDropInPlace();
           },
         });
+    return () => {
+      stopTracking();
+      cleanup?.();
+    };
   }, [targetRef, dragHandleRef, item, onDragging, onDropInPlace]);
 
   return dragging;
