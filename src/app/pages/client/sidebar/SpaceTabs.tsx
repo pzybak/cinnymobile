@@ -83,6 +83,9 @@ import { roomToUnreadAtom } from '../../../state/room/roomToUnread';
 import { markAsRead } from '../../../utils/notifications';
 import { copyToClipboard } from '../../../utils/dom';
 import { stopPropagation } from '../../../utils/keyboard';
+import { useTouchInput } from '../../../hooks/useTouchInput';
+import { isTouchContextMenu, useLongPress } from '../../../hooks/useLongPress';
+import { BottomSheet } from '../../../components/bottom-sheet';
 import { getMatrixToRoom } from '../../../plugins/matrix-to';
 import { getViaServers } from '../../../plugins/via-servers';
 import { getRoomAvatarUrl } from '../../../utils/room';
@@ -421,8 +424,17 @@ function SpaceTab({
 
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
 
+  const touchInput = useTouchInput();
+  // On touch the menu opens in a bottom sheet, which ignores the anchor.
+  const longPressProps = useLongPress<HTMLButtonElement>(
+    ({ clientX, clientY }) => setMenuAnchor({ x: clientX, y: clientY, width: 0, height: 0 }),
+    !touchInput
+  );
+
   const handleContextMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
     evt.preventDefault();
+    // Android also fires this on a long-press, which useLongPress handles.
+    if (isTouchContextMenu(evt.nativeEvent)) return;
     const cords = evt.currentTarget.getBoundingClientRect();
     setMenuAnchor((currentState) => {
       if (currentState) return undefined;
@@ -451,6 +463,7 @@ function SpaceTab({
                 size={folder ? '300' : '400'}
                 onClick={onClick}
                 onContextMenu={handleContextMenu}
+                {...longPressProps}
               >
                 <RoomAvatar
                   roomId={space.roomId}
@@ -468,7 +481,16 @@ function SpaceTab({
               <UnreadBadge highlight={unread.highlight > 0} count={unread.total} />
             </SidebarItemBadge>
           )}
-          {menuAnchor && (
+          {touchInput && menuAnchor && (
+            <BottomSheet menu title={space.name} onClose={() => setMenuAnchor(undefined)}>
+              <SpaceMenu
+                room={space}
+                requestClose={() => setMenuAnchor(undefined)}
+                onUnpin={onUnpin}
+              />
+            </BottomSheet>
+          )}
+          {!touchInput && menuAnchor && (
             <PopOut
               anchor={menuAnchor}
               position="Right"

@@ -24,6 +24,9 @@ import { useNavToActivePathAtom } from '../../../state/hooks/navToActivePath';
 import { useHomeRooms } from '../home/useHomeRooms';
 import { markAsRead } from '../../../utils/notifications';
 import { stopPropagation } from '../../../utils/keyboard';
+import { useTouchInput } from '../../../hooks/useTouchInput';
+import { isTouchContextMenu, useLongPress } from '../../../hooks/useLongPress';
+import { BottomSheet } from '../../../components/bottom-sheet';
 import { useSetting } from '../../../state/hooks/settings';
 import { settingsAtom } from '../../../state/settings';
 
@@ -84,8 +87,17 @@ export function HomeTab() {
     navigate(getHomePath());
   };
 
+  const touchInput = useTouchInput();
+  // On touch the menu opens in a bottom sheet, which ignores the anchor.
+  const longPressProps = useLongPress<HTMLButtonElement>(
+    ({ clientX, clientY }) => setMenuAnchor({ x: clientX, y: clientY, width: 0, height: 0 }),
+    !touchInput
+  );
+
   const handleContextMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
     evt.preventDefault();
+    // Android also fires this on a long-press, which useLongPress handles.
+    if (isTouchContextMenu(evt.nativeEvent)) return;
     const cords = evt.currentTarget.getBoundingClientRect();
     setMenuAnchor((currentState) => {
       if (currentState) return undefined;
@@ -103,6 +115,7 @@ export function HomeTab() {
             outlined
             onClick={handleHomeClick}
             onContextMenu={handleContextMenu}
+            {...longPressProps}
           >
             <Icon src={Icons.Home} filled={homeSelected} />
           </SidebarAvatar>
@@ -113,7 +126,12 @@ export function HomeTab() {
           <UnreadBadge highlight={homeUnread.highlight > 0} count={homeUnread.total} />
         </SidebarItemBadge>
       )}
-      {menuAnchor && (
+      {touchInput && menuAnchor && (
+        <BottomSheet menu title="Home" onClose={() => setMenuAnchor(undefined)}>
+          <HomeMenu requestClose={() => setMenuAnchor(undefined)} />
+        </BottomSheet>
+      )}
+      {!touchInput && menuAnchor && (
         <PopOut
           anchor={menuAnchor}
           position="Right"

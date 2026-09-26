@@ -6,9 +6,9 @@ import { receiveSsoCallback, setupSsoLinks } from './sso';
 import './native.css';
 
 /**
- * Hardware/gesture back: close the newest open overlay (see backButton.ts),
- * otherwise walk the router history, and leave the app when there is
- * nothing to go back to. react-router listens to popstate, so
+ * Hardware/gesture back: close the newest open sheet, dialog or menu (see
+ * backButton.ts), otherwise walk the router history, and leave the app when
+ * there is nothing to go back to. react-router listens to popstate, so
  * history.back() is enough. iOS has no back button; this is a no-op there.
  */
 const setupBackButton = async () => {
