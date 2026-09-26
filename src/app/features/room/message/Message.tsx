@@ -92,7 +92,10 @@ type MessageQuickReactionsProps = {
   onReaction: ReactionHandler;
 };
 // Fills the touch menu's reaction row when there are few recent emojis.
-const DEFAULT_QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+const DEFAULT_QUICK_REACTIONS = ['👍', '❤', '😂', '😮', '😢', '🙏'];
+
+// Emoji data spells some emoji with a variation selector (U+FE0F), some not.
+const sameEmoji = (a: string, b: string) => a.replace(/\uFE0F/g, '') === b.replace(/\uFE0F/g, '');
 
 export const MessageQuickReactions = as<'div', MessageQuickReactionsProps>(
   ({ onReaction, ...props }, ref) => {
@@ -103,8 +106,8 @@ export const MessageQuickReactions = as<'div', MessageQuickReactionsProps>(
       ? [
           ...recent,
           ...DEFAULT_QUICK_REACTIONS.flatMap((unicode) => {
-            const emoji = emojis.find((e) => e.unicode === unicode);
-            return emoji && !recent.some((r) => r.unicode === unicode) ? [emoji] : [];
+            const emoji = emojis.find((e) => sameEmoji(e.unicode, unicode));
+            return emoji && !recent.some((r) => sameEmoji(r.unicode, unicode)) ? [emoji] : [];
           }),
         ].slice(0, 6)
       : recent;
