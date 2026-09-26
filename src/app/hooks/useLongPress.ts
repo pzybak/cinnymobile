@@ -78,3 +78,11 @@ export const useLongPress = <T extends Element>(
 
   return { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel: cancel };
 };
+
+/**
+ * Whether a `contextmenu` event came from a touch long-press (Android fires
+ * one) rather than a mouse right-click. By the time it fires, Android has
+ * already selected the word under the finger.
+ */
+export const isTouchContextMenu = (evt: MouseEvent): boolean =>
+  'pointerType' in evt && (evt as PointerEvent).pointerType === 'touch';

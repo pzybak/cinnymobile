@@ -60,7 +60,7 @@ import {
 } from '../../../utils/matrix';
 import { MessageLayout, MessageSpacing } from '../../../state/settings';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
-import { useLongPress } from '../../../hooks/useLongPress';
+import { isTouchContextMenu, useLongPress } from '../../../hooks/useLongPress';
 import { useRecentEmoji } from '../../../hooks/useRecentEmoji';
 import * as css from './styles.css';
 import { EventReaders } from '../../../components/event-readers';
@@ -836,10 +836,19 @@ export const Message = as<'div', MessageProps>(
       </Box>
     );
 
-    const openContextMenu = (target: EventTarget, clientX: number, clientY: number): boolean => {
-      if (!window.getSelection()?.isCollapsed || edit) return false;
+    const openContextMenu = (
+      target: EventTarget,
+      clientX: number,
+      clientY: number,
+      touch: boolean
+    ): boolean => {
+      if (edit) return false;
+      // A touch long-press has already selected a word by now (Android), so
+      // only a mouse right-click on selected text is left to the browser.
+      if (!touch && !window.getSelection()?.isCollapsed) return false;
       const tag = (target as any).tagName;
       if (typeof tag === 'string' && tag.toLowerCase() === 'a') return false;
+      if (touch) window.getSelection()?.removeAllRanges();
       setMenuAnchor({
         x: clientX,
         y: clientY,
@@ -851,11 +860,12 @@ export const Message = as<'div', MessageProps>(
 
     const handleContextMenu: MouseEventHandler<HTMLDivElement> = (evt) => {
       if (evt.altKey) return;
-      if (openContextMenu(evt.target, evt.clientX, evt.clientY)) evt.preventDefault();
+      const touch = isTouchContextMenu(evt.nativeEvent);
+      if (openContextMenu(evt.target, evt.clientX, evt.clientY, touch)) evt.preventDefault();
     };
 
     const longPressProps = useLongPress<HTMLDivElement>(
-      ({ target, clientX, clientY }) => openContextMenu(target, clientX, clientY),
+      ({ target, clientX, clientY }) => openContextMenu(target, clientX, clientY, true),
       edit
     );
 
@@ -1198,10 +1208,16 @@ export const Event = as<'div', EventProps>(
     const [menuAnchor, setMenuAnchor] = useState<RectCords>();
     const stateEvent = typeof mEvent.getStateKey() === 'string';
 
-    const openContextMenu = (target: EventTarget, clientX: number, clientY: number): boolean => {
-      if (!window.getSelection()?.isCollapsed) return false;
+    const openContextMenu = (
+      target: EventTarget,
+      clientX: number,
+      clientY: number,
+      touch: boolean
+    ): boolean => {
+      if (!touch && !window.getSelection()?.isCollapsed) return false;
       const tag = (target as any).tagName;
       if (typeof tag === 'string' && tag.toLowerCase() === 'a') return false;
+      if (touch) window.getSelection()?.removeAllRanges();
       setMenuAnchor({
         x: clientX,
         y: clientY,
@@ -1213,11 +1229,12 @@ export const Event = as<'div', EventProps>(
 
     const handleContextMenu: MouseEventHandler<HTMLDivElement> = (evt) => {
       if (evt.altKey) return;
-      if (openContextMenu(evt.target, evt.clientX, evt.clientY)) evt.preventDefault();
+      const touch = isTouchContextMenu(evt.nativeEvent);
+      if (openContextMenu(evt.target, evt.clientX, evt.clientY, touch)) evt.preventDefault();
     };
 
     const longPressProps = useLongPress<HTMLDivElement>(({ target, clientX, clientY }) =>
-      openContextMenu(target, clientX, clientY)
+      openContextMenu(target, clientX, clientY, true)
     );
 
     const handleOpenMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
