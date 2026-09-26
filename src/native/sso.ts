@@ -74,6 +74,16 @@ export const receiveSsoCallback = (url: string): boolean => {
   const target = new URL(redirect, window.location.href);
   if (target.origin !== window.location.origin) return true;
   target.searchParams.set('loginToken', loginToken);
-  window.location.assign(target.toString());
+
+  // Change the URL in place instead of loading it: Capacitor's Android file
+  // server treats a last path segment with a dot (/login/matrix.org) as a
+  // missing file. react-router reads the new location on popstate, and the
+  // login page starts the token login when loginToken appears.
+  window.history.replaceState(
+    window.history.state,
+    '',
+    target.pathname + target.search + target.hash
+  );
+  window.dispatchEvent(new PopStateEvent('popstate', { state: window.history.state }));
   return true;
 };
