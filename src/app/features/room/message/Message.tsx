@@ -60,6 +60,7 @@ import {
 } from '../../../utils/matrix';
 import { MessageLayout, MessageSpacing } from '../../../state/settings';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
+import { useLongPress } from '../../../hooks/useLongPress';
 import { useRecentEmoji } from '../../../hooks/useRecentEmoji';
 import * as css from './styles.css';
 import { EventReaders } from '../../../components/event-readers';
@@ -835,18 +836,28 @@ export const Message = as<'div', MessageProps>(
       </Box>
     );
 
-    const handleContextMenu: MouseEventHandler<HTMLDivElement> = (evt) => {
-      if (evt.altKey || !window.getSelection()?.isCollapsed || edit) return;
-      const tag = (evt.target as any).tagName;
-      if (typeof tag === 'string' && tag.toLowerCase() === 'a') return;
-      evt.preventDefault();
+    const openContextMenu = (target: EventTarget, clientX: number, clientY: number): boolean => {
+      if (!window.getSelection()?.isCollapsed || edit) return false;
+      const tag = (target as any).tagName;
+      if (typeof tag === 'string' && tag.toLowerCase() === 'a') return false;
       setMenuAnchor({
-        x: evt.clientX,
-        y: evt.clientY,
+        x: clientX,
+        y: clientY,
         width: 0,
         height: 0,
       });
+      return true;
     };
+
+    const handleContextMenu: MouseEventHandler<HTMLDivElement> = (evt) => {
+      if (evt.altKey) return;
+      if (openContextMenu(evt.target, evt.clientX, evt.clientY)) evt.preventDefault();
+    };
+
+    const longPressProps = useLongPress<HTMLDivElement>(
+      ({ target, clientX, clientY }) => openContextMenu(target, clientX, clientY),
+      edit
+    );
 
     const handleOpenMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
       const target = evt.currentTarget.parentElement?.parentElement ?? evt.currentTarget;
@@ -1130,17 +1141,22 @@ export const Message = as<'div', MessageProps>(
           </div>
         )}
         {messageLayout === MessageLayout.Compact && (
-          <CompactLayout before={headerJSX} onContextMenu={handleContextMenu}>
+          <CompactLayout before={headerJSX} onContextMenu={handleContextMenu} {...longPressProps}>
             {msgContentJSX}
           </CompactLayout>
         )}
         {messageLayout === MessageLayout.Bubble && (
-          <BubbleLayout before={avatarJSX} header={headerJSX} onContextMenu={handleContextMenu}>
+          <BubbleLayout
+            before={avatarJSX}
+            header={headerJSX}
+            onContextMenu={handleContextMenu}
+            {...longPressProps}
+          >
             {msgContentJSX}
           </BubbleLayout>
         )}
         {messageLayout !== MessageLayout.Compact && messageLayout !== MessageLayout.Bubble && (
-          <ModernLayout before={avatarJSX} onContextMenu={handleContextMenu}>
+          <ModernLayout before={avatarJSX} onContextMenu={handleContextMenu} {...longPressProps}>
             {headerJSX}
             {msgContentJSX}
           </ModernLayout>
@@ -1182,18 +1198,27 @@ export const Event = as<'div', EventProps>(
     const [menuAnchor, setMenuAnchor] = useState<RectCords>();
     const stateEvent = typeof mEvent.getStateKey() === 'string';
 
-    const handleContextMenu: MouseEventHandler<HTMLDivElement> = (evt) => {
-      if (evt.altKey || !window.getSelection()?.isCollapsed) return;
-      const tag = (evt.target as any).tagName;
-      if (typeof tag === 'string' && tag.toLowerCase() === 'a') return;
-      evt.preventDefault();
+    const openContextMenu = (target: EventTarget, clientX: number, clientY: number): boolean => {
+      if (!window.getSelection()?.isCollapsed) return false;
+      const tag = (target as any).tagName;
+      if (typeof tag === 'string' && tag.toLowerCase() === 'a') return false;
       setMenuAnchor({
-        x: evt.clientX,
-        y: evt.clientY,
+        x: clientX,
+        y: clientY,
         width: 0,
         height: 0,
       });
+      return true;
     };
+
+    const handleContextMenu: MouseEventHandler<HTMLDivElement> = (evt) => {
+      if (evt.altKey) return;
+      if (openContextMenu(evt.target, evt.clientX, evt.clientY)) evt.preventDefault();
+    };
+
+    const longPressProps = useLongPress<HTMLDivElement>(({ target, clientX, clientY }) =>
+      openContextMenu(target, clientX, clientY)
+    );
 
     const handleOpenMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
       const target = evt.currentTarget.parentElement?.parentElement ?? evt.currentTarget;
@@ -1295,7 +1320,9 @@ export const Event = as<'div', EventProps>(
             </Menu>
           </div>
         )}
-        <div onContextMenu={handleContextMenu}>{children}</div>
+        <div onContextMenu={handleContextMenu} {...longPressProps}>
+          {children}
+        </div>
       </MessageBase>
     );
   }
