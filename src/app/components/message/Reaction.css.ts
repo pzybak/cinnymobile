@@ -50,6 +50,14 @@ export const Reaction = style([
         cursor: 'not-allowed',
       },
     },
+    '@media': {
+      // Finger-sized chips: tapping one toggles your reaction.
+      '(hover: none) and (pointer: coarse)': {
+        minWidth: toRem(48),
+        paddingTop: toRem(6),
+        paddingBottom: toRem(6),
+      },
+    },
   },
 ]);
 

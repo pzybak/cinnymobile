@@ -6,6 +6,7 @@ import { Box, Chip, Header, Icon, IconButton, Icons, Text, as } from 'folds';
 import * as css from './ImageViewer.css';
 import { useZoom } from '../../hooks/useZoom';
 import { usePan } from '../../hooks/usePan';
+import { useTouchZoomPan } from '../../hooks/useTouchZoomPan';
 import { downloadMedia } from '../../utils/matrix';
 
 export type ImageViewerProps = {
@@ -17,7 +18,8 @@ export type ImageViewerProps = {
 export const ImageViewer = as<'div', ImageViewerProps>(
   ({ className, alt, src, requestClose, ...props }, ref) => {
     const { zoom, zoomIn, zoomOut, setZoom } = useZoom(0.2);
-    const { pan, cursor, onMouseDown } = usePan(zoom !== 1);
+    const { pan, setPan, cursor, onMouseDown } = usePan(zoom !== 1);
+    const { gesturing, touchZoomPanProps } = useTouchZoomPan(zoom, setZoom, setPan);
 
     const handleDownload = async () => {
       const fileContent = await downloadMedia(src);
@@ -79,15 +81,19 @@ export const ImageViewer = as<'div', ImageViewerProps>(
           className={css.ImageViewerContent}
           justifyContent="Center"
           alignItems="Center"
+          {...touchZoomPanProps}
         >
           <img
             className={css.ImageViewerImg}
             style={{
               cursor,
               transform: `scale(${zoom}) translate(${pan.translateX}px, ${pan.translateY}px)`,
+              // Follow the finger without easing.
+              transition: gesturing ? 'none' : undefined,
             }}
             src={src}
             alt={alt}
+            draggable={false}
             onMouseDown={onMouseDown}
           />
         </Box>

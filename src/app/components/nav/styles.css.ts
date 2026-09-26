@@ -55,7 +55,7 @@ const NavItemBase = style({
   minHeight: toRem(36),
 
   selectors: {
-    '&:hover, &:focus-visible': {
+    '&:focus-visible': {
       backgroundColor: ContainerHover,
     },
     '&[data-hover=true]': {
@@ -70,6 +70,16 @@ const NavItemBase = style({
     [`&:has(.${NavLink}:focus-visible)`]: {
       outline: `${config.borderWidth.B600} solid ${ContainerLine}`,
       outlineOffset: `calc(-1 * ${config.borderWidth.B600})`,
+    },
+  },
+  '@media': {
+    // Touch leaves :hover set after a tap; see Sidebar.css.ts.
+    '(hover: hover)': {
+      selectors: {
+        '&:hover': {
+          backgroundColor: ContainerHover,
+        },
+      },
     },
   },
   '@supports': {

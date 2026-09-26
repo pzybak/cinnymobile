@@ -76,9 +76,6 @@ export const SidebarItem = recipe({
       transition: 'transform 200ms cubic-bezier(0, 0.8, 0.67, 0.97)',
 
       selectors: {
-        '&:hover': {
-          transform: `translateX(${toRem(PUSH_X)})`,
-        },
         '&::before': {
           content: '',
           display: 'none',
@@ -90,9 +87,20 @@ export const SidebarItem = recipe({
           background: 'CurrentColor',
           transition: 'height 200ms linear',
         },
-        '&:hover::before': {
-          display: 'block',
-          width: toRem(3),
+      },
+      '@media': {
+        // Touch leaves :hover set after a tap, which would keep the item
+        // nudged; only devices that can hover get the effect.
+        '(hover: hover)': {
+          selectors: {
+            '&:hover': {
+              transform: `translateX(${toRem(PUSH_X)})`,
+            },
+            '&:hover::before': {
+              display: 'block',
+              width: toRem(3),
+            },
+          },
         },
       },
     },
@@ -107,8 +115,14 @@ export const SidebarItem = recipe({
             display: 'block',
             height: toRem(24),
           },
-          '&:hover::before': {
-            width: toRem(3 + PUSH_X),
+        },
+        '@media': {
+          '(hover: hover)': {
+            selectors: {
+              '&:hover::before': {
+                width: toRem(3 + PUSH_X),
+              },
+            },
           },
         },
       },

@@ -824,8 +824,10 @@ export const Message = as<'div', MessageProps>(
             as="button"
             style={{ color: usernameColor }}
             data-user-id={senderId}
-            onContextMenu={onUserClick}
-            onClick={onUsernameClick}
+            // On touch a tap opens the profile, like the avatar, and a
+            // long-press opens the message menu, which offers Mention.
+            onContextMenu={touchInput ? undefined : onUserClick}
+            onClick={touchInput ? onUserClick : onUsernameClick}
           >
             <Text
               as="span"
@@ -1023,6 +1025,22 @@ export const Message = as<'div', MessageProps>(
             Reply
           </Text>
         </MenuItem>
+        {touchInput && senderId !== mx.getUserId() && (
+          <MenuItem
+            size="300"
+            after={<Icon size="100" src={Icons.Mention} />}
+            radii="300"
+            data-user-id={senderId}
+            onClick={(evt: any) => {
+              onUsernameClick(evt);
+              closeMenu();
+            }}
+          >
+            <Text className={css.MessageMenuItemText} as="span" size="T300" truncate>
+              Mention
+            </Text>
+          </MenuItem>
+        )}
         {!isThreadedMessage && (
           <MenuItem
             size="300"

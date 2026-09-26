@@ -25,16 +25,25 @@ type LongPressHandlers<T> = {
  */
 export const useLongPress = <T extends Element>(
   onLongPress: LongPressHandler,
-  disabled?: boolean
+  disabled?: boolean,
+  options?: {
+    /**
+     * For draggable elements: Android starts a native drag partway through
+     * a long-press, so leave the press to the drag's own handling.
+     */
+    cancelOnDragStart?: boolean;
+  }
 ): LongPressHandlers<T> => {
   const timerRef = useRef<number>();
   const startRef = useRef<{ x: number; y: number }>();
   const firedRef = useRef(false);
+  const cancelOnDragStart = options?.cancelOnDragStart;
 
   const cancel = useCallback(() => {
     window.clearTimeout(timerRef.current);
     timerRef.current = undefined;
     startRef.current = undefined;
+    window.removeEventListener('dragstart', cancel, true);
   }, []);
 
   useEffect(() => cancel, [cancel]);
@@ -52,6 +61,7 @@ export const useLongPress = <T extends Element>(
       firedRef.current = true;
       onLongPress({ target, clientX, clientY });
     }, LONG_PRESS_DELAY);
+    if (cancelOnDragStart) window.addEventListener('dragstart', cancel, true);
   };
 
   const onTouchMove = (evt: TouchEvent<T>) => {

@@ -123,9 +123,14 @@ export const AvatarBase = style({
   display: 'flex',
   alignSelf: 'start',
 
-  selectors: {
-    '&:hover': {
-      transform: `translateY(${toRem(-2)})`,
+  '@media': {
+    // Touch leaves :hover set after a tap; see Sidebar.css.ts.
+    '(hover: hover)': {
+      selectors: {
+        '&:hover': {
+          transform: `translateY(${toRem(-2)})`,
+        },
+      },
     },
   },
 });
@@ -171,6 +176,15 @@ export const Username = style({
     },
     'button&:hover, button&:focus-visible': {
       textDecoration: 'underline',
+    },
+  },
+  '@media': {
+    // A taller tap target without moving the text.
+    '(hover: none) and (pointer: coarse)': {
+      paddingTop: toRem(6),
+      paddingBottom: toRem(6),
+      marginTop: toRem(-6),
+      marginBottom: toRem(-6),
     },
   },
 });

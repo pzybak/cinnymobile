@@ -32,6 +32,7 @@ import FocusTrap from 'focus-trap-react';
 import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { useSetting } from '../../../state/hooks/settings';
+import { useTouchInput } from '../../../hooks/useTouchInput';
 import { DateFormat, MessageLayout, MessageSpacing, settingsAtom } from '../../../state/settings';
 import { SettingTile } from '../../../components/setting-tile';
 import { KeySymbol } from '../../../utils/key-symbol';
@@ -709,21 +710,27 @@ function DateAndTime() {
 
 function Editor() {
   const [enterForNewline, setEnterForNewline] = useSetting(settingsAtom, 'enterForNewline');
+  // On touch screens Enter always adds a new line (see RoomInput).
+  const touchInput = useTouchInput();
   const [isMarkdown, setIsMarkdown] = useSetting(settingsAtom, 'isMarkdown');
   const [hideActivity, setHideActivity] = useSetting(settingsAtom, 'hideActivity');
 
   return (
     <Box direction="Column" gap="100">
       <Text size="L400">Editor</Text>
-      <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
-        <SettingTile
-          title="ENTER for Newline"
-          description={`Use ${
-            isMacOS() ? KeySymbol.Command : 'Ctrl'
-          } + ENTER to send message and ENTER for newline.`}
-          after={<Switch variant="Primary" value={enterForNewline} onChange={setEnterForNewline} />}
-        />
-      </SequenceCard>
+      {!touchInput && (
+        <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
+          <SettingTile
+            title="ENTER for Newline"
+            description={`Use ${
+              isMacOS() ? KeySymbol.Command : 'Ctrl'
+            } + ENTER to send message and ENTER for newline.`}
+            after={
+              <Switch variant="Primary" value={enterForNewline} onChange={setEnterForNewline} />
+            }
+          />
+        </SequenceCard>
+      )}
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
           title="Markdown Formatting"

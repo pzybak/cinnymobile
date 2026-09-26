@@ -103,6 +103,7 @@ import { getMemberDisplayName, getMentionContent, trimReplyFromBody } from '../.
 import { CommandAutocomplete } from './CommandAutocomplete';
 import { Command, SHRUG, TABLEFLIP, UNFLIP, useCommands } from '../../hooks/useCommands';
 import { mobileOrTablet } from '../../utils/user-agent';
+import { useTouchInput } from '../../hooks/useTouchInput';
 import { useElementSizeObserver } from '../../hooks/useElementSizeObserver';
 import { ReplyLayout, ThreadIndicator } from '../../components/message';
 import { roomToParentsAtom } from '../../state/room/roomToParents';
@@ -128,7 +129,11 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
   ({ editor, fileDropContainerRef, roomId, room }, ref) => {
     const mx = useMatrixClient();
     const useAuthentication = useMediaAuthentication();
-    const [enterForNewline] = useSetting(settingsAtom, 'enterForNewline');
+    const [enterForNewlineSetting] = useSetting(settingsAtom, 'enterForNewline');
+    // Phone keyboards have no Ctrl+Enter: there Enter adds a new line and the
+    // send button sends.
+    const touchInput = useTouchInput();
+    const enterForNewline = enterForNewlineSetting || touchInput;
     const [isMarkdown] = useSetting(settingsAtom, 'isMarkdown');
     const [hideActivity] = useSetting(settingsAtom, 'hideActivity');
     const [legacyUsernameColor] = useSetting(settingsAtom, 'legacyUsernameColor');

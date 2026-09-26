@@ -25,6 +25,8 @@ export const ImageViewerContent = style([
     backgroundColor: color.Background.Container,
     color: color.Background.OnContainer,
     overflow: 'hidden',
+    // Touch gestures are handled by useTouchZoomPan.
+    touchAction: 'none',
   },
 ]);
 

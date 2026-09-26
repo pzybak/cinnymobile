@@ -53,6 +53,7 @@ import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { getEditedEvent, getMentionContent, trimReplyFromFormattedBody } from '../../../utils/room';
 import { mobileOrTablet } from '../../../utils/user-agent';
+import { useTouchInput } from '../../../hooks/useTouchInput';
 import { useComposingCheck } from '../../../hooks/useComposingCheck';
 
 type MessageEditorProps = {
@@ -66,7 +67,11 @@ export const MessageEditor = as<'div', MessageEditorProps>(
   ({ room, roomId, mEvent, imagePackRooms, onCancel, ...props }, ref) => {
     const mx = useMatrixClient();
     const editor = useEditor();
-    const [enterForNewline] = useSetting(settingsAtom, 'enterForNewline');
+    const [enterForNewlineSetting] = useSetting(settingsAtom, 'enterForNewline');
+    // Phone keyboards have no Ctrl+Enter: there Enter adds a new line and the
+    // send button sends.
+    const touchInput = useTouchInput();
+    const enterForNewline = enterForNewlineSetting || touchInput;
     const [globalToolbar] = useSetting(settingsAtom, 'editorToolbar');
     const [isMarkdown] = useSetting(settingsAtom, 'isMarkdown');
     const [toolbar, setToolbar] = useState(globalToolbar);

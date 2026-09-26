@@ -235,11 +235,15 @@ type FolderDraggable = {
 };
 type SidebarDraggable = string | FolderDraggable;
 
+// A drop this close to where the drag began is a long-press, not a move.
+const DROP_IN_PLACE_DISTANCE = 10;
+
 const useDraggableItem = (
   item: SidebarDraggable,
   targetRef: RefObject<HTMLElement>,
   onDragging: (item?: SidebarDraggable) => void,
-  dragHandleRef?: RefObject<HTMLElement>
+  dragHandleRef?: RefObject<HTMLElement>,
+  onDropInPlace?: () => void
 ): boolean => {
   const [dragging, setDragging] = useState(false);
 
@@ -257,12 +261,20 @@ const useDraggableItem = (
             setDragging(true);
             onDragging?.(item);
           },
-          onDrop: () => {
+          onDrop: ({ location }) => {
             setDragging(false);
             onDragging?.(undefined);
+            const { initial, current } = location;
+            if (
+              onDropInPlace &&
+              Math.abs(current.input.clientX - initial.input.clientX) <= DROP_IN_PLACE_DISTANCE &&
+              Math.abs(current.input.clientY - initial.input.clientY) <= DROP_IN_PLACE_DISTANCE
+            ) {
+              onDropInPlace();
+            }
           },
         });
-  }, [targetRef, dragHandleRef, item, onDragging]);
+  }, [targetRef, dragHandleRef, item, onDragging, onDropInPlace]);
 
   return dragging;
 };
@@ -418,18 +430,27 @@ function SpaceTab({
     [folder, space]
   );
 
-  useDraggableItem(spaceDraggable, targetRef, onDragging);
-  const dropState = useDropTarget(spaceDraggable, targetRef);
-  const dropType = dropState?.type;
-
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
 
   const touchInput = useTouchInput();
   // On touch the menu opens in a bottom sheet, which ignores the anchor.
-  const longPressProps = useLongPress<HTMLButtonElement>(
-    ({ clientX, clientY }) => setMenuAnchor({ x: clientX, y: clientY, width: 0, height: 0 }),
-    !touchInput
+  const openTouchMenu = useCallback(() => setMenuAnchor({ x: 0, y: 0, width: 0, height: 0 }), []);
+  // Android turns a long-press on a space into a native drag, so the menu
+  // opens when that drag is let go where it began. The timer covers
+  // WebViews that never start a drag.
+  const longPressProps = useLongPress<HTMLButtonElement>(openTouchMenu, !touchInput, {
+    cancelOnDragStart: true,
+  });
+
+  useDraggableItem(
+    spaceDraggable,
+    targetRef,
+    onDragging,
+    undefined,
+    touchInput ? openTouchMenu : undefined
   );
+  const dropState = useDropTarget(spaceDraggable, targetRef);
+  const dropType = dropState?.type;
 
   const handleContextMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
     evt.preventDefault();

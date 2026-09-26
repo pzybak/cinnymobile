@@ -1,4 +1,4 @@
-import { style } from '@vanilla-extract/css';
+import { globalStyle, style } from '@vanilla-extract/css';
 import { color, config, DefaultReset, toRem } from 'folds';
 
 export const Editor = style([
@@ -18,6 +18,15 @@ export const EditorOptions = style([
     padding: config.space.S200,
   },
 ]);
+globalStyle(`${EditorOptions} button`, {
+  '@media': {
+    // Finger-sized composer buttons (attach, formatting, emoji, send).
+    '(hover: none) and (pointer: coarse)': {
+      minWidth: toRem(40),
+      minHeight: toRem(40),
+    },
+  },
+});
 
 export const EditorTextareaScroll = style({});
 
