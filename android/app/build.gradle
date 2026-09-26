@@ -16,6 +16,19 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        debug {
+            // CI points this at a shared debug keystore so builds install over
+            // each other; unset, Gradle uses its default debug key.
+            def sharedDebugKeystore = System.getenv('CINNY_DEBUG_KEYSTORE')
+            if (sharedDebugKeystore) {
+                storeFile file(sharedDebugKeystore)
+                storePassword 'android'
+                keyAlias 'androiddebugkey'
+                keyPassword 'android'
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
