@@ -12,7 +12,7 @@ with `ANDROID_HOME` set).
 npm ci
 npm run android        # web build + cap sync + install/run on a connected device
 # or
-npm run build:mobile   # web build + cap sync only
+npm run build:android  # web build + cap sync android only
 npm run android:open   # open the project in Android Studio
 ```
 

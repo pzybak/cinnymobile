@@ -20,9 +20,11 @@
     "commit": "git-cz",
     "bump": "node scripts/update-version.js",
     "build:mobile": "vite build && cap sync",
-    "android": "npm run build:mobile && cap run android",
+    "build:android": "vite build && cap sync android",
+    "build:ios": "vite build && cap sync ios",
+    "android": "npm run build:android && cap run android",
     "android:open": "cap open android",
-    "ios": "npm run build:mobile && cap run ios",
+    "ios": "npm run build:ios && cap run ios",
     "ios:open": "cap open ios"
   },
   "lint-staged": {
