@@ -30,6 +30,16 @@ jobs:
         env:
           NODE_OPTIONS: '--max_old_space_size=4096'
         run: npm run build:android
+      # Sign every build with the same debug key so APKs install over each
+      # other. Gradle uses ~/.android/debug.keystore by default. The secret is
+      # unavailable to fork PRs, which fall back to a throwaway key.
+      - name: Restore debug keystore
+        env:
+          ANDROID_DEBUG_KEYSTORE: ${{ secrets.ANDROID_DEBUG_KEYSTORE }}
+        if: env.ANDROID_DEBUG_KEYSTORE != ''
+        run: |
+          mkdir -p ~/.android
+          echo "$ANDROID_DEBUG_KEYSTORE" | base64 -d > ~/.android/debug.keystore
       - name: Assemble debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon

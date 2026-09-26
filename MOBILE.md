@@ -18,6 +18,8 @@ npm run android:open   # open the project in Android Studio
 
 Debug builds can be inspected from desktop Chrome at `chrome://inspect`.
 CI builds a debug APK on every push to `mobile` (see the "Android build" workflow artifacts).
+It signs with the debug keystore in the `ANDROID_DEBUG_KEYSTORE` secret (base64), so builds
+install over each other. Use the same file as `~/.android/debug.keystore` for local builds.
 
 ## iOS (later)
 
