@@ -15,7 +15,7 @@ export const InPlace = style({
 // the page aside. Fixed to where it sits on its own screen.
 const behind: ComplexStyleRule = {
   position: 'fixed',
-  top: safe('top'),
+  top: `var(--drawer-top, ${safe('top')})`,
   bottom: safe('bottom'),
   display: 'flex',
   visibility: 'hidden',

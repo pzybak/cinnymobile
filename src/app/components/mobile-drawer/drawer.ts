@@ -12,8 +12,12 @@ let panel: HTMLElement | null = null;
 let offset = 0;
 
 const apply = (animate: boolean) => {
-  document.documentElement.toggleAttribute(REVEALED_ATTR, offset > 0);
+  const root = document.documentElement;
+  root.toggleAttribute(REVEALED_ATTR, offset > 0);
   if (!panel) return;
+  // Line the nav up with the page, which sits below banners such as
+  // "Connecting...".
+  if (offset > 0) root.style.setProperty('--drawer-top', `${panel.getBoundingClientRect().top}px`);
   panel.style.transition = animate ? `transform ${SLIDE_MS}ms ease-out` : '';
   panel.style.transform = offset > 0 ? `translateX(${offset}px)` : '';
   panel.style.boxShadow = offset > 0 ? '-4px 0 24px rgba(0, 0, 0, 0.35)' : '';
